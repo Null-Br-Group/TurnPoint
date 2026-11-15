@@ -8,13 +8,13 @@ This project is a minimalist **URL redirector** written in Go. The concept is st
 
 There is no administrative panel, external database, or heavy dependencies. It is a single service—easy to spin up and easy to tear down.
 
-##  Objectives
+## Objectives
 
 - Create short URLs associated with IDs that serve as an entry point for **downloading files and executables**.
 - Keep control of the destination in the hands of those who operate the service: the file can be replaced, renamed, or moved without breaking the public link.
 - Log the basics of the requests (IP, User-Agent, timestamp) to determine whether and when a link was accessed.
 
-## Infraestrutura Efêmera
+## Ephemeral Infrastructure
 
 The greatest asset of this redirector is its **simplicity**, which translates into operational flexibility and OPSEC (Operational Security):
 
