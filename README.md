@@ -1,51 +1,81 @@
-# Encurtador De URL's
+# TurnPoint
 
-> **Simple URL redirector for file downloads — project under construction**
+>> A lightweight URL redirection service written in Go.
+
+**TurnPoint** is an independent security engineering project by **Null-Br Group**.
+
+Its purpose is to provide an identifier-based redirection mechanism: a short URL points to a destination managed by the service operator. This makes it possible to change the destination associated with an identifier without having to redistribute the original link.
+
+The project is being developed with simplicity, portability, and operational flexibility in mind.
 
 ## Overview
 
-This project is a minimalist **URL redirector** written in Go. The concept is straightforward: create **URL + ID** pairs that point to files or executables hosted elsewhere. The person who controls the server determines where each ID points, allowing the destination to be changed at any time without altering the link that has already been distributed.
+TurnPoint is designed as a lightweight HTTP service with a small footprint and minimal external dependencies.
 
-There is no administrative panel, external database, or heavy dependencies. It is a single service—easy to spin up and easy to tear down.
+The core concept is simple:
 
-## Objectives
+1. Register a destination URL.
+2. Associate it with a unique identifier.
+3. Distribute the generated redirection link.
+4. Manage the destination associated with that identifier.
 
-- Create short URLs associated with IDs that serve as an entry point for **downloading files and executables**.
-- Keep control of the destination in the hands of those who operate the service: the file can be replaced, renamed, or moved without breaking the public link.
-- Log the basics of the requests (IP, User-Agent, timestamp) to determine whether and when a link was accessed.
+The intended use cases include controlled file delivery, security research, and authorized Red Team infrastructure.
 
-## Ephemeral Infrastructure
+## Design Goals
 
-The greatest asset of this redirector is its **simplicity**, which translates into operational flexibility and OPSEC (Operational Security):
+- **Lightweight**: keep the service simple and minimize external dependencies.
+- Portable: make deployment straightforward across different environments.
+- **Flexible redirection**: allow destinations to be changed without replacing previously distributed links.
+- **Operational visibility**: provide useful request information, such as source IP, User-Agent, and timestamps.
+- **Controlled deployment**: support temporary and disposable infrastructure when appropriate.
 
-1. **Stateless by design**: all redirection logic resides within the binary itself and in memory. There is no state coupled to the machine.
-2. **Total mobility**: when necessary, the service can be moved to **any server and any domain/DNS** in a matter of minutes. Simply point the new DNS to the new host, and the same set of URLs will continue to work.
-3. **Low-cost forensics**: with no disk persistence, a powered-off node leaves no easily accessible audit trail.
-4. **Temporary redirects**: use of `302`/`307` instead of `301`, preventing proxies and browsers from caching the destination after the operation has concluded.
+These are design goals; not all of them are implemented in the current prototype.
 
 ## Architecture
 
-|Layer | Current implementation |
-|---|---|
-| HTTPserver | pure `net/http` (Go stdlib) |
-| URL Repository | In-memory (`map` protected by a mutex) |
-| Persistence | None (by choice) |
-| Deploy | Single binary, no external dependencies |
+The project is written in Go and uses the standard "net/http" package for HTTP handling.
 
-## Project status
+The intended architecture is deliberately small:
 
-> [!WARNING]
-> **Under Development.** The project is in an active phase of development. The API, the ID format, and the behavior of the redirector may change without notice. Do not use in production.
+Component| Purpose
+HTTP server| Handle registration and redirection requests
+URL repository| Associate identifiers with destination URLs
+Redirection handler| Resolve identifiers and redirect requests
+Request logging| Record relevant access information
 
-*Roadmap and known issues:*
-- [ ] Rotation of destinations by ID at runtime (via API or configuration file)
-- [ ] Structured logs (JSON) with optional rotation
-- [ ] Configuration via command-line flags or a `.env` file (remove hardcoded values)
-- [ ] Unit and integration tests
-- [ ] Detailed usage documentation and deployment examples
+The current prototype is still evolving. Its internal interfaces and implementation details may change as the project develops.
 
-## ⚖️ Notice Regarding Ethical and Responsible Use
+## Project Status
 
-This software was developed **exclusively for security research, testing in controlled and/or authorized environments** (such as authorized *Red Team* laboratories or infrastructure studies).
+«[!WARNING]
+Early development — not production-ready.
 
-Using this tool to obfuscate malicious traffic, direct users to harmful content, or carry out activities without explicit authorization is illegal and violates cybercrime laws such as the United States Computer Fraud and Abuse Act (18 U.S.C. § 1030) and Brazil's Law 12.737/2012 (Digital Crimes Law). The author assumes no responsibility for the misuse of this code.
+The current repository contains an incomplete prototype. Core behavior, API contracts, configuration, and internal components are still being developed and validated.»
+
+### Roadmap
+
+- [ ] Establish a consistent URL registration and redirection API
+- [ ] Complete destination lookup and identifier management
+- [ ] Implement safe, concurrency-aware in-memory storage
+- [ ] Support destination updates at runtime
+- [ ] Add configurable server address and public base URL
+- [ ] Implement structured request logging
+- [ ] Add input validation and request handling safeguards
+- [ ] Add unit and integration tests
+- [ ] Document usage, configuration, and deployment
+
+## Responsible Use
+
+TurnPoint is intended for security research, controlled testing, and explicitly authorized security operations.
+
+The project must not be used to distribute harmful content, deceive users, or facilitate unauthorized activity.
+
+Operators are responsible for ensuring that their use of the software complies with applicable laws, regulations, and authorization requirements.
+
+## About Null-Br Group
+
+TurnPoint is developed under Null-Br Group, an independent security research and development collective focused on offensive security, vulnerability research, reverse engineering, and systems engineering.
+
+Our work is driven by research, not visibility.
+
+**Research. Engineering. Exploration.**
