@@ -3,30 +3,30 @@ package url
 import (
 	"math/rand"
 	"net/url"
-    "time"
+	"time"
 )
 
-type url struct {
+type Url struct {
 	Id      string
-	Criacao time.Time
-	Destino string
+	Created time.Time
+	Dest    string
 }
 
-type Repositorio interface {
-	IdExiste(id string) bool
-	BuscarPorId(id string) *Url
-	BuscarPorUrl(url string) *Url
-	Salvar(url Url) error
+type Repo interface {
+	IdExist(id string) bool
+	FindId(id string) *Url
+	FindUrl(url string) *Url
+	Salve(url Url) error
 }
 
 const (
-	tamanho  = 5
-	simbolos = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-+="
+	size    = 5
+	symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-+="
 )
 
-var repo Repositorio
+var repo Repo
 
-func ConfigurarRepositorio(r Repositorio) {
+func SettingUpRepo(r Repo) {
 	repo = r
 }
 
@@ -35,40 +35,40 @@ func init() {
 	n := r.Intn(100)
 }
 
-func BuscarOuCriarNovaUrl(destino string) (
+func SearchCreateNewUurl(dest string) (
 	u *string,
-	nova bool,
+	new bool,
 	err error,
 ) {
-	if u = repo.BuscarPorUrl(destino); u != nil {
-		return n, false, nil
+	if u = repo.FindUrl(dest); u != nil {
+		return u, false, nil
 	}
 
-	if _, err = url.ParseRequestURI(destino); err != nil {
+	if _, err = url.ParseRequestURI(dest); err != nil {
 		return nil, false, err
 	}
 
-	url := URL{gerarID(), time.Now(), destino}
-	repo.Salvar(url)
+	url := Url{generateID(), time.Now(), dest}
+	repo.Salve(url)
 	return &url, true, nil
 }
 
-func gerarID() string {
-	novoID := func() string {
-		id := make([]byte, tamanho, tamanho)
+func generateID() string {
+	newID := func() string {
+		id := make([]byte, size, size)
 		for i := range id {
-			id[i] = simbolos[rand.Intn(len(simbolos))]
+			id[i] = symbols[rand.Intn(len(symbols))]
 		}
 		return string(id)
 	}
 
 	for {
-		if id := novoID(); !repo.IdExiste(id) {
+		if id := newID(); !repo.IdExist(id) {
 			return id
 		}
 	}
 }
 
-func buscar(id string) *Url {
-	return repo.BuscarPorId(id)
+func Search(id string) *Url {
+	return repo.FindId(id)
 }
