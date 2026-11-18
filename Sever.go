@@ -4,60 +4,66 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/Null-Br-Group/TurnPoint/url"
 )
 
 type Headers map[string]string
 
-type url struct {
+type Url struct {
 	Id      string
-	Criacao time.Time
-	Destino string
+	Created time.Time
+	Dest    string
 }
 
 var (
-	port    int
-	urlBase string
+	PORT    int
+	BASEURL string
 )
 
 func init() {
-	port = 8888
-	urlBase = fmt.Sprintf("http://localhost:%d", port)
+	PORT = 31337
+	BASEURL = fmt.Sprintf("http://localhost:%d", PORT)
 }
 
 func main() {
-	http.HandleFunc("/api/encurtar", Encurtador)
-	http.HandleFunc("/r/", Redirecionador)
+	http.HandleFunc("/api/encurtar", Shortener)
+	http.HandleFunc("/r/", Redirector)
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%d", port), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%d", PORT), nil))
 }
 
-func Encurtador(w http.ResponseWriter, r *http.Request) {
+func Shortener(w http.ResponseWriter, r *http.Request) {
+
+	// 405 - Only POST
 	if r.Method != "POST" {
-		responderCom(w, http.StatusMethodNotAllowed, Headers{
+		replyWith(w, http.StatusMethodNotAllowed, Headers{
 			"Allow": "POST",
 		})
 		return
 	}
-	url, nova, err := url.BuscarOuCriarNovaUrl(extrairUrl(r))
+
+	url, new, err := url.SearchCreateNeUurl(ExtractrUrl(r))
 
 	if err != nil {
-		responderCom(w, http.StatusBadRequest, nil)
+		replyWith(w, http.StatusBadRequest, nil)
 		return
 	}
 
 	var status int
-	if nova {
+	if new {
 		status = http.StatusCreated
 	} else {
 		status = http.StatusOK
 	}
 
-	urlCurta := fmt.Sprintf("%s/r/%s", urlBase, url.Id)
-	responderCom(w, status, Headers{"Location": urlCurta})
+	shortUrl := fmt.Sprintf("%s/r/%s", BASEURL, url.Id)
+	replyWith(w, status, Headers{"Location": shortUrl})
 }
 
-func responderCom(
+func replyWith(
 	w http.ResponseWriter,
 	status int,
 	headers Headers,
@@ -68,18 +74,19 @@ func responderCom(
 	w.WriteHeader(status)
 }
 
-func ExtrairUrl(r *http.Request) string {
+func ExtractrUrl(r *http.Request) string {
 	url := make([]byte, r.ContentLength, r.ContentLength)
 	r.Body.Read(url)
 	return string(url)
 }
 
-func Redirecionador(w http.ResponseWriter, r *http.Request) {
-	caminho := string.Split(r.URL.Path, "/")
-	id := caminho[len(caminho)-1]
+func Redirector(w http.ResponseWriter, r *http.Request) {
 
-	if url := url.Buscar(id); url != nil {
-		http.Redirect(w, r, url.Destino, http.StatusMovedPermanently)
+	path := strings.Split(r.URL.Path, "/")
+	id := path[len(path)-1]
+
+	if url := url.Search(id); url != nil {
+		http.Redirect(w, r, url.Dest, http.StatusMovedPermanently)
 	} else {
 		http.NotFound(w, r)
 	}
