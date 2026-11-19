@@ -9,7 +9,12 @@ import (
 type Url struct {
 	Id      string    `json:"id"`
 	Created time.Time `json:"Created"`
-	Dest    string    `json:Dest`
+	Dest    string    `json:"Dest"`
+}
+
+type STATS struct {
+	Url    *Url `json:"url"`
+	clicks int  `json:"clicks"`
 }
 
 type Repo interface {
@@ -18,6 +23,9 @@ type Repo interface {
 	FindUrl(url string) *Url
 	Salve(url Url) error
 	RegistClick(id string)
+
+	// Return the number of visits, based on the URL
+	SearchClicks(id string) int
 }
 
 const (
@@ -72,4 +80,13 @@ func generateID() string {
 
 func Search(id string) *Url {
 	return repo.FindId(id)
+}
+
+func (r *memoryRepo) SearchClicks(id string) int {
+	return r.clicks[id]
+}
+
+func (u *Url) Stats() *STATS {
+	clicks := repo.SearchClicks(u.Id)
+	return &STATS{u, clicks}
 }
