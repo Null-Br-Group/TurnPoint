@@ -21,6 +21,7 @@ type Url struct {
 var (
 	PORT    int
 	BASEURL string
+	STATS   chan string
 )
 
 func init() {
@@ -29,7 +30,12 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/api/encurtar", Shortener)
+	// Records statistics as soon as the server is started
+	STATS = make(chan string)
+	defer close(STATS)
+	go recordStatistics(STATS)
+
+	http.HandleFunc("/add/index", Shortener)
 	http.HandleFunc("/r/", Redirector)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%d", PORT), nil))
@@ -37,7 +43,7 @@ func main() {
 
 func Shortener(w http.ResponseWriter, r *http.Request) {
 
-	// 405 - Only POST
+	// 405 - Only POST's Method Allowed
 	if r.Method != "POST" {
 		replyWith(w, http.StatusMethodNotAllowed, Headers{
 			"Allow": "POST",
@@ -61,6 +67,13 @@ func Shortener(w http.ResponseWriter, r *http.Request) {
 
 	shortUrl := fmt.Sprintf("%s/r/%s", BASEURL, url.Id)
 	replyWith(w, status, Headers{"Location": shortUrl})
+}
+
+func recordStatistics(ids <-chan string) {
+	for id := range ids {
+		url.resgistClick(id)
+		fmt.Printf("%s - Click successfully registered for %s.\n", time.Now().Format("2006-01-02 15:04:05"), id)
+	}
 }
 
 func replyWith(
@@ -87,6 +100,7 @@ func Redirector(w http.ResponseWriter, r *http.Request) {
 
 	if url := url.Search(id); url != nil {
 		http.Redirect(w, r, url.Dest, http.StatusMovedPermanently)
+		STATS <- id
 	} else {
 		http.NotFound(w, r)
 	}
