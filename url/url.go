@@ -17,6 +17,7 @@ type Repo interface {
 	FindId(id string) *Url
 	FindUrl(url string) *Url
 	Salve(url Url) error
+	RegistClick(id string)
 }
 
 const (

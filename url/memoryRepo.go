@@ -1,11 +1,15 @@
 package url
 
 type memoryRepo struct {
-	urls map[string]*Url
+	urls   map[string]*Url
+	clicks map[string]int
 }
 
 func NewMemoryRepo() *memoryRepo {
-	return &memoryRepo{make(map[string]*Url)}
+	return &memoryRepo{
+		make(map[string]*Url),
+		make(map[string]int),
+	}
 }
 
 func (r *memoryRepo) IdExist(id string) bool {
@@ -25,6 +29,10 @@ func (r *memoryRepo) FindUrl(url string) *Url {
 	}
 
 	return nil
+}
+
+func (r *memoryRepo) RegistClick(id string) {
+	r.clicks[id] += 1
 }
 
 func (r *memoryRepo) Salv(url Url) error {
