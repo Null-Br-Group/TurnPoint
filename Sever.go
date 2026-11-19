@@ -45,7 +45,7 @@ func Shortener(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, new, err := url.SearchCreateNeUurl(ExtractrUrl(r))
+	url, new, err := url.SearchCreateNewUurl(ExtractrUrl(r))
 
 	if err != nil {
 		replyWith(w, http.StatusBadRequest, nil)
