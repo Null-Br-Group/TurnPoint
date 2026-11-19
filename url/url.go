@@ -7,9 +7,9 @@ import (
 )
 
 type Url struct {
-	Id      string
-	Created time.Time
-	Dest    string
+	Id      string    `json:"id"`
+	Created time.Time `json:"Created"`
+	Dest    string    `json:Dest`
 }
 
 type Repo interface {
